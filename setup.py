@@ -21,6 +21,7 @@ setup(
         "Development Status :: 3 - Alpha",
         "Topic :: Utilities",
         "Intended Audience :: Developers",
+        "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
     ],
     install_requires=read('requirements.txt').strip().splitlines(),
