@@ -53,6 +53,9 @@ class PCloudJSONConnection(AbstractPCloudConnection):
         """
         data = params.pop('_data', None)
         data_progress_callback = params.pop('_data_progress_callback', None)
+
+        params.update(self.persistent_params)
+
         #TODO: actually use the callback, probably chunk encoding
         execute_request = data is None and requests.get or requests.put
 
