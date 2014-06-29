@@ -14,7 +14,7 @@ from pprint import pprint as pp
 
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from pcloudapi import PCloudAPI
+from pcloudapi import PCloudAPI, PCloudJSONConnection
 
 def fill_file(f):
     data = b'abcdef\n' * 100000
@@ -35,7 +35,7 @@ def main():
     AUTH_TOKEN = None
     TEST_DIR = '/'
 
-    api = PCloudAPI()
+    api = PCloudAPI(connection=PCloudJSONConnection)
     if AUTH_TOKEN:
         api.auth = AUTH_TOKEN
     else:

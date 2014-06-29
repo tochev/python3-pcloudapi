@@ -64,6 +64,8 @@ def main():
             assert checksum == hashlib.sha1(zip_file.read(filename)).hexdigest()
         print()
 
+    print("All done")
+
 
 if __name__ == '__main__':
     main()
