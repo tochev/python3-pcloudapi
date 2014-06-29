@@ -16,12 +16,21 @@ class PCloudBuffer(io.BufferedRWPair):
 ### Misc functionality that should be in python but is not ###
 
 try:
-    from ssl import create_default_context as ssl_create_default_context
+    from ssl import (
+            match_hostname,
+            create_default_context as ssl_create_default_context
+        )
+
 except ImportError:
+    import sys
+    from requests.packages.urllib3.packages.ssl_match_hostname import match_hostname
+
     # create_default_context is added in python 3.4
-    def ssl_create_default_context(purpose=ssl.Purpose.SERVER_AUTH, *, cafile=None,
+    def ssl_create_default_context(purpose='SERVER_AUTH', *, cafile=None,
                                capath=None, cadata=None):
         """NOTE: Copied from python 3.4
+
+        WARNING: this doesn't do hostname checking, you need backports.ssl_match_hostname
 
         Create a SSLContext object with default settings.
 
@@ -29,10 +38,10 @@ except ImportError:
             deprecation. The values represent a fair balance between maximum
             compatibility and security.
         """
-        if not isinstance(purpose, ssl._ASN1Object):
-            raise TypeError(purpose)
+        if purpose not in ['SERVER_AUTH', 'CLIENT_AUTH']:
+            raise ValueError("Unknown purpose " + purpose)
 
-        context = SSLContext(ssl.PROTOCOL_SSLv23)
+        context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
 
         # SSLv2 considered harmful.
         context.options |= ssl.OP_NO_SSLv2
@@ -44,11 +53,12 @@ except ImportError:
         # disable compression to prevent CRIME attacks (OpenSSL 1.0+)
         context.options |= getattr(ssl._ssl, "OP_NO_COMPRESSION", 0)
 
-        if purpose == ssl.Purpose.SERVER_AUTH:
+        if purpose == 'SERVER_AUTH':
             # verify certs and host name in client mode
             context.verify_mode = ssl.CERT_REQUIRED
-            context.check_hostname = True
-        elif purpose == ssl.Purpose.CLIENT_AUTH:
+            # should also check for hostnames but
+            #context.check_hostname = True
+        elif purpose == 'CLIENT_AUTH':
             # Prefer the server's ciphers by default so that we get stronger
             # encryption
             context.options |= getattr(ssl._ssl, "OP_CIPHER_SERVER_PREFERENCE", 0)
@@ -66,7 +76,13 @@ except ImportError:
             # no explicit cafile, capath or cadata but the verify mode is
             # CERT_OPTIONAL or CERT_REQUIRED. Let's try to load default system
             # root CA certificates for the given purpose. This may fail silently.
-            context.load_default_certs(purpose)
+            
+            #context.load_default_certs(purpose)
+            if sys.platform == "win32":
+                for storename in context._windows_cert_stores:
+                    context._load_windows_store_certs(storename)
+            else:
+                context.set_default_verify_paths()
         return context
 
 
@@ -92,6 +108,7 @@ def create_connection(server=None, port=None, timeout=None, use_ssl=False):
             if use_ssl:
                 sock = context.wrap_socket(sock, server_hostname=server)
             sock.connect(sa)
+            match_hostname(sock.getpeercert(), server)
             return sock
 
         except socket.error as _:
