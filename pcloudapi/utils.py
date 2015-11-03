@@ -108,7 +108,8 @@ def create_connection(server=None, port=None, timeout=None, use_ssl=False):
             if use_ssl:
                 sock = context.wrap_socket(sock, server_hostname=server)
             sock.connect(sa)
-            match_hostname(sock.getpeercert(), server)
+            if use_ssl:
+                match_hostname(sock.getpeercert(), server)
             return sock
 
         except socket.error as _:
