@@ -1,7 +1,6 @@
-
 #!/usr/bin/python3
 
-# PCloudBinaryConnection example
+# PCloudJSONConnection example
 #  - listfolder
 #  - upload a file
 #  - download it in a zip
