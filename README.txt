@@ -34,7 +34,7 @@ the python requests library).
 Installation
 ============
 
-    sduo apt-get install python3 python3-requests python3-setuptools
+    sudo apt-get install python3 python3-requests python3-setuptools
     git clone https://github.com/tochev/python3-pcloudapi
     cd pcloudapi
     python3 setup.py install
