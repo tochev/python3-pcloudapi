@@ -63,6 +63,7 @@ class PCloudJSONConnection(AbstractPCloudConnection):
         r = execute_request(self.baseurl + method,
                             params=params,
                             data=data,
+                            allow_redirects=False,
                             timeout=self.timeout)
         r.raise_for_status()
 

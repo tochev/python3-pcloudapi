@@ -10,6 +10,10 @@ from .exceptions import PCloudException
 from .connection import AbstractPCloudConnection
 from .pcloudbin import PCloudBinaryConnection
 
+
+PCLOUD_SERVER_SUFFIX = '.pcloud.com'  # only allow downloads from pcloud servers
+
+
 class PCloudAPIMetaclass(type):
 
     @classmethod
@@ -144,23 +148,35 @@ class PCloudAPI(metaclass=PCloudAPIMetaclass):
             else:
                 raise
 
-    def download(self, remote_path, local_path, progress_callback=None):
+    def download(self, remote_path, local_path, progress_callback=None,
+                 enforced_server_suffix=PCLOUD_SERVER_SUFFIX):
         """Downloads file from remote_path to local_path.
 
         :param progress_callback: called each time with the number of bytes
             written in the iteration
+        :param enforced_server_suffix: only allow downloads from servers having
+            the expected suffix (this together with ssl prevents a downloading
+            of non-pcloud controlled resource)
         :returns pcloud api response
         """
         response = self.make_request('getfilelink',
                                      path=remote_path,
                                      forcedownload=1)
+        server = response['hosts'][0]  # should be the closest server
+        if enforced_server_suffix:
+            if '/' in server or not server.lower().endswith(enforced_server_suffix):
+                raise ValueError(
+                    "Received download server {!r} which does not match expected suffix {!r}".format(
+                        server, enforced_server_suffix
+                    )
+                )
         url = "{protocol}://{server}:{port}{path}".format(
                 protocol=self.connection.use_ssl and 'https' or 'http',
-                server=response['hosts'][0],
+                server=server,
                 port=self.connection.use_ssl and 443 or 80,
                 path=response['path']
             )
-        r = requests.get(url, stream=True, timeout=self.connection.timeout)
+        r = requests.get(url, stream=True, allow_redirects=False, timeout=self.connection.timeout)
         r.raise_for_status()
 
         with open(local_path, 'wb') as fd:
