@@ -7,6 +7,14 @@ It supports both the binary and the json protocols.
 
 Homepage: https://github.com/tochev/python3-pcloudapi
 
+Changelog
+========
+ - v0.0.3
+    - [Security] Do not allow redirects and enforce pcloud domain
+ - v0.0.2
+    - Fix connection without SSL (not using SSL is strongly discouraged)
+ - v0.0.1 - Initial public version
+
 Examples
 ========
 

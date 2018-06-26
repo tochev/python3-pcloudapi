@@ -8,7 +8,7 @@ def read(fname):
 
 setup(
     name = "pcloud",
-    version = "0.0.2",
+    version = "0.0.3",
     author = "Tocho Tochev",
     author_email = "tocho@tochev.net",
     description = ("python3 api to access pcloud.com"),
